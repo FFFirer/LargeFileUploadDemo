@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Upload Large File</h1>
+    <div>
+        <input type="text" value="请选择文件" size="20" name="uploadFile" style="border: 1px solid #ccc" />
+        <input type="button" value="选择文件" onclick="path.click()" style="border:1px solid #ccc; background: #fff"/>
+        <input type="file" id="path" style="display:none" onchange="uploadFile.value=this.value"/>
+        <br />
+        <span id="output">0%</span>
+        <button type="button" id="btnUpload">上传</button>
+    </div>
+</div>
+
+@section Scripts{ 
+<script src="~/js/upload.js">
+    
+</script>
+}
