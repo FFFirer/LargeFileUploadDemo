@@ -1,7 +1,5 @@
-﻿import { end, start } from "@popperjs/core";
-
-var UploadPath = "";
-var splitSize = 2 * 1024 * 1024;    // 切片大小
+﻿var UploadPath = "";
+var splitSize = 2 * 1024;    // 切片大小
 
 function startUpload() {
     var file = $("#path")[0].files[0];

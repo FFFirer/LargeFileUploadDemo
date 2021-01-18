@@ -7,15 +7,78 @@
     <div>
         <input type="text" value="请选择文件" size="20" name="uploadFile" style="border: 1px solid #ccc" />
         <input type="button" value="选择文件" onclick="path.click()" style="border:1px solid #ccc; background: #fff"/>
-        <input type="file" id="path" style="display:none" onchange="uploadFile.value=this.value"/>
+        <input type="file" id="path" style="display:none" onchange="onFileChangeHandler(this.value)"/>
         <br />
         <span id="output">0%</span>
-        <button type="button" id="btnUpload">上传</button>
+        <button type="button" id="btnUpload" onclick="startUpload()">上传</button>
     </div>
 </div>
 
 @section Scripts{ 
-<script src="~/js/upload.js">
-    
+<script>
+    var UploadPath = "";
+    var splitSize = 5 * 1024;    // 切片大小
+
+    function startUpload() {
+        var file = $("#path")[0].files[0];
+        ajaxUploadFile(file, 0);
+    }
+
+    function ajaxUploadFile(file, i, fileId) {
+        var name = file.name;
+        size = file.size;
+        splitCount = Math.ceil(size / splitSize);
+        console.log("size:" + size + " index:" + i + " total:" + splitCount)
+        if (i > splitCount) {
+            console.log("分块超出总数");
+            return;
+        }
+        // 计算分片的起始位置和结束位置
+        start = i * splitSize;
+        end = Math.min(size, start + splitSize);
+        // 构造表单
+        var form = new FormData();
+        form.append("data", file.slice(start, end));
+        form.append("lastModified", file.lastModified);
+        form.append("filename", file.name);
+        form.append("total", splitCount);
+        form.append("index", i);
+
+        if (fileId == undefined) {
+            fileId = "";
+        }
+        form.append("fileid", fileId);
+
+        UploadPath = file.lastModified;
+        $.ajax({
+            url: "/Home/Upload",
+            type: "POST",
+            data: form,
+            processData: false, // 告诉jquery不要对form进行处理
+            contentType: false,
+            success: function (result) {
+                if (result != null) {
+                    i = result.number++;
+                    var num = Math.ceil(i * 100 / splitCount);
+                    $("#output").text(num + '%');
+                    ajaxUploadFile(file, i + 1, result.fileid);
+                    if (result.mergeOk) {
+                        var filepath = $("#path");
+                        filepath.after(filepath.clone().val(""));
+                        filepath.remove();
+                        $("#uploadFile").val("请选择文件");
+                        alert("success");
+                    }
+                } else {
+                    console.log("上传失败，出现错误");
+                }
+            }
+        })
+    }
+
+    // 上传新文件时
+    function onFileChangeHandler(value) {
+        $("input[name=uploadFile]").val(value);
+    }
 </script>
 }
